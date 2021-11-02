@@ -6,6 +6,7 @@ import requests
 import numpy as np
 from passwords import key
 
+#Define variables: search date, datatype to plot, site and number of days to search for.
 start=input('Enter date (YYYY-MM-DD)')
 datatype=input('Enter dataset (Total, AverageSpeed, Car, HGV, LGV, Bus)')
 site=input('Enter site code')
@@ -14,6 +15,7 @@ vehicle_types=['Car','Bus','HGV','LGV','MotorBike','Total']
 start1 = datetime.datetime.strptime(start, '%Y-%m-%d')
 end = start1 + datetime.timedelta(days=int(numday))
 
+#fills url with data inputted from above
 url='http://bcc.opendata.onl/rtem_csv.json?Earliest='+str(start)+'&Latest='+str(end)+'&scn='+site+'&ApiKey='+key 
 result=requests.get(url).json()
 df=pd.DataFrame(result)
@@ -21,6 +23,7 @@ df=pd.DataFrame(result)
 a = [[datetime.datetime.strptime(result['RTEM_CSVs']['kids'][n]['kids']['Date'],"%Y-%m-%d %H:%M:%S"),\
 int(result['RTEM_CSVs']['kids'][n]['kids'][datatype])] for n in result['RTEM_CSVs']['kids']]
 
+#variable to print counts of each vehicle type
 vehicles_total=[]
 for i in vehicle_types:
 	i1 = sum(int(result['RTEM_CSVs']['kids'][n]['kids'][i]) for n in result['RTEM_CSVs']['kids'])
@@ -30,11 +33,12 @@ for i in vehicle_types:
 for i in vehicles_total:
 	print(i)
 
+#plots the grpah for the choosen datatype
 ax = plt.plot([n[0] for n in a],[m[1] for m in a], marker='o',linestyle='none', label=' vehicle count');
 plt.xticks(rotation = '25')
 plt.xlabel('Date')
 plt.ylabel(f'{datatype} Count')
-plt.title(f'{numday} Day Count for {datatype} at site {site} ({start})')
+plt.title(f'{numday} Day Count for {datatype} at site {site} (from {start})')
 plt.legend()
 fig = plt.gcf()
 fig.set_size_inches(40, 15)
