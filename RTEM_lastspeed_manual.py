@@ -11,10 +11,13 @@ end= today+datetime.timedelta(days=1)
 site=input('Enter site code')
 url='http://bcc.opendata.onl/rtem_csv.json?Earliest='+str(today)+'&Latest='+str(end)+'&scn='+site+'&ApiKey='+key 
 result=requests.get(url).json()
+
+#create dataframe from json data
 df = pd.DataFrame(result['RTEM_CSVs']['kids'][n]['kids'] for n in result['RTEM_CSVs']['kids'])
 df.Date = pd.to_datetime(df.Date)
 df['AverageSpeed']=df['AverageSpeed'].astype(int)
 
+#determine the latest time and speed in the dataframe
 speed = df.iloc[-1]['AverageSpeed']
 when = df.iloc[-1]['Date']
 
