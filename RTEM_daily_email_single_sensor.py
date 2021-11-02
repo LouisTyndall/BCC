@@ -33,7 +33,7 @@ def send_email(password):
     with smtplib.SMTP_SSL('smtp.gmail.com',465) as smtp:
         smtp.login('louistyndall2@gmail.com',password)
         subject = 'Congestion Alert'
-        body = ('There is congestion at',loc,'with an average speed of',speed,'kmph, recorded at',date)
+        body = (f'There is congestion at {loc} with an average speed of {speed}kmph, recorded at {date}')
         msg = f'Subject: {subject}\n\n{body}'
         smtp.sendmail('louistyndall2@gmail.com','louistyndall2@gmail.com',msg)
         print('email is sent')
