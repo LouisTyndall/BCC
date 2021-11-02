@@ -22,7 +22,7 @@ df.set_index('Date',inplace=True)
 
 #filter for the last 15 mins and to access desired speeds
 df=df[(df.index > last_15)]
-df=df[(df['Speed'] < 15)]
+df=df[(df['Speed'] < 9)]
 df=df[(df['Speed']>0)]
 df['Sensor']=df['value']
 df = df[['Sensor','Speed','Direction','Vehicles']]
