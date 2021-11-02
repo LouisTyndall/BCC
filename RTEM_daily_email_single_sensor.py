@@ -46,7 +46,7 @@ for df in results:
 	loc = df.iloc[-1]['SCN']['value']
 	date=df.iloc[-1]['Date']
 	if date > last_15:
-		if 0<speed<100:
+		if 0<speed<15:
 			send_email(password)
 #run every 15 mins
 while(True):
