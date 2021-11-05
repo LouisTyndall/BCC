@@ -31,4 +31,4 @@ for i in vehicle_type:
     x = df1[0].loc[df1[0]['class'] == i]
     num = x['class_Count'].sum()
     if num > 0:
-        print(f'There are {num} number of {i}')
+        print(f'There are {num} of type {i}')
