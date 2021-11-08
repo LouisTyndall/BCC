@@ -3,9 +3,9 @@ from passwords import *
 import pandas as pd
 import matplotlib.pyplot as plt
 
-date = input('What date do want to search for?')
+#date = input('What date do want to search for?')
 loc=int(input('Which location do you want to search for?'))
-url = f'https://www.tfwm.onl/AWS_Analysis.json?ApiKey={key}&earliest=22/09/2021&latest='+date
+url = f'https://www.tfwm.onl/AWS_Analysis.json?ApiKey={key}&earliest=22/09/2021&latest=23/09/2021'
 result = requests.get(url).json()
 df = pd.DataFrame(result['AWS_Analysis']['kids'][n]['kids'] for n in result['AWS_Analysis']['kids'])
 df['Segment_Speed_MPH']=df['Segment_Speed_MPH'].astype(float)
