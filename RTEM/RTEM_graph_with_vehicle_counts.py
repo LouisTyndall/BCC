@@ -1,12 +1,10 @@
 import datetime
 import matplotlib.pyplot as plt
-import matplotlib.dates as md
 import pandas as pd
 import requests
-import numpy as np
 from passwords import key
 
-
+#Set search parameters, date, datatype and number of days to search for
 start=input('Enter date (YYYY-MM-DD)')
 datatype=input('Enter dataset (Total, AverageSpeed, Car, HGV, LGV, Bus)')
 site=input('Enter site code')
@@ -15,23 +13,25 @@ vehicle_types=['Car','Bus','HGV','LGV','MotorBike','Total']
 start1 = datetime.datetime.strptime(start, '%Y-%m-%d')
 end = start1 + datetime.timedelta(days=int(numday))
 
+#Retrieve data and convert to dataframe
 url='http://bcc.opendata.onl/rtem_csv.json?Earliest='+str(start)+'&Latest='+str(end)+'&scn='+site+'&ApiKey='+key 
 result=requests.get(url).json()
-df=pd.DataFrame(result)
+df = pd.DataFrame(result['RTEM_CSVs']['kids'][n]['kids'] for n in result['RTEM_CSVs']['kids'])
+df['Date'] = pd.to_datetime(df['Date'])
 
-a = [[datetime.datetime.strptime(result['RTEM_CSVs']['kids'][n]['kids']['Date'],"%Y-%m-%d %H:%M:%S"),\
-int(result['RTEM_CSVs']['kids'][n]['kids'][datatype])] for n in result['RTEM_CSVs']['kids']]
-
+#Firstly, change vehicle data to int. Secondly, provide a count for each type of vehicle. Commit this to a list and print.
 vehicles_total=[]
-for i in vehicle_types:
-	i1 = sum(int(result['RTEM_CSVs']['kids'][n]['kids'][i]) for n in result['RTEM_CSVs']['kids'])
-	i=f'The total {i} count is {i1}'
-	vehicles_total.append(i)
+for vehicle_type in vehicle_types:
+	df[vehicle_type] = df[vehicle_type].astype(int)
+	vehicle_count = sum(int(result['RTEM_CSVs']['kids'][n]['kids'][i]) for n in result['RTEM_CSVs']['kids'])
+	vehicle_type_count=f'The total {vehicle_type} count is {vehicle_count}'
+	vehicles_total.append(vehicle_type_count)
 
 for i in vehicles_total:
 	print(i)
 
-ax = plt.plot([n[0] for n in a],[m[1] for m in a], marker='o',linestyle='none', label=' vehicle count');
+#Plot graph of selected datatype throughout the specified time period.
+plt.plot(df['Date'],df[f'{datatype}'], marker='o',linestyle='none', label= f'{datatype} count');
 plt.xticks(rotation = '25')
 plt.xlabel('Date')
 plt.ylabel(f'{datatype} Count')
