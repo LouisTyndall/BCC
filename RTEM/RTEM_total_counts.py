@@ -4,6 +4,7 @@ import pandas as pd
 import requests
 from passwords import key
 
+#Set search parameters
 start=input('Enter date (YYYY-MM-DD)')
 #datatype=input('Enter dataset (Total, AverageSpeed, Car, HGV, LGV, Bus)')
 site=input('Enter site code')
@@ -15,6 +16,7 @@ url='http://bcc.opendata.onl/rtem_csv.json?Earliest='+str(start)+'&Latest='+str(
 result=requests.get(url).json()
 df=pd.DataFrame(result)
 
+#Format dataframe and set the index to the time series
 df = pd.DataFrame(result['RTEM_CSVs']['kids'][n]['kids'] for n in result['RTEM_CSVs']['kids'])
 df.Date = pd.to_datetime(df.Date)
 df['Total']=df['Total'].astype(int)
@@ -22,6 +24,7 @@ df.set_index('Date',inplace=True)
 new = df.resample('D').sum()
 new.drop(index=df.index[-1],axis = 0, inplace=True)
 
+#Plot the graph to show count per day over the selected number of days
 plt.bar(new.index, new['Total'], label='count')
 plt.xlabel('Date')
 plt.ylabel('Number of vehicles')
