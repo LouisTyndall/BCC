@@ -34,3 +34,5 @@ fig.set_size_inches(20, 15)
 ax = plt.gca()
 ax.set_xticks(ax.get_xticks()[::6])
 plt.show()
+
+#draw a graph of speed vs flow
