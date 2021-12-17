@@ -4,8 +4,7 @@ import pandas as pd
 import requests
 from passwords import key
 
-
-#Set up parameters for the search. The date and the number of days to search for
+#Set up parameters for the search. The date and the number of days to search for.
 start=input('Enter date (YYYY-MM-DD)')
 numday=input('Number of days to search for')
 start1 = datetime.datetime.strptime(start, '%Y-%m-%d')
@@ -26,7 +25,7 @@ for site in sites:
     df=pd.DataFrame(result['RTEM_CSVs']['kids'][n]['kids'] for n in result['RTEM_CSVs']['kids'])
     dfs.append(df)
 
-#Here, the dataframe is formatted to set the index as the time series so i can be resampled. It is possible to change the resample, for example to hourly, daily, weekly. 
+#Here, the dataframe is formatted to set the index as the time series so it can be resampled. It is possible to change the resample, for example to hourly, daily, weekly. 
 #The name of the location is selected using iloc and the last row is dropped. Finally, the data is saved as an excel sheet for analysis.
 for df in dfs:
     loc = df.iloc[-1]['SCN']['value']
