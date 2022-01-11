@@ -11,7 +11,7 @@ end= today+timedelta(days=1)
 #Can add more sites here
 sites= ['R0101L1','R1522L1']
 #set up variable to allow a search for the last 15 minutes
-last_15 = date.today() - timedelta(minutes = 1000)
+last_15 = datetime.datetime.now() - timedelta(minutes = 15)
 last_15 = last_15.strftime('%Y-%m-%d %H:%M:%S')
 
 #creates a list of URLs from the sites inputted
