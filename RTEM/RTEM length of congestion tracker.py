@@ -91,19 +91,19 @@ for df in results:
             speed2 = df.iloc[-2]['AverageSpeed']
             loc2 = df.iloc[-2]['SCN']['value']
             date2 = df.iloc[-2]['Date']
-            if date2 > last_30: 
+            if last_15 > date2 > last_30: 
                 if 0< speed2 <40:
             
                     speed3 = df.iloc[-3]['AverageSpeed']
                     loc3 = df.iloc[-3]['SCN']['value']
                     date3 = df.iloc[-3]['Date']
-                    if date3 > last_45:
+                    if last_30 > date3 > last_45:
                         if 0< speed3 <40:
                             
                             speed4 = df.iloc[-3]['AverageSpeed']
                             loc4 = df.iloc[-3]['SCN']['value']
                             date4= df.iloc[-3]['Date']
-                            if date4 > last_60:
+                            if last_45 > date4 > last_60:
                                 if 0< speed3 <40:
                                     print(f'There has been been congestion for over 60 minutes, with speeds of {speed4}KPH at {loc4}')
                                 else:
