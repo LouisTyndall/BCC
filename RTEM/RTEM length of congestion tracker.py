@@ -6,18 +6,20 @@ from passwords import key,password
 import smtplib
 import time
 
+
+#set up parameters for the api search. Set up variables that check whether or not the database been updated in the last 15,30,45 and 60 minutes, respectively. 
 today = date.today()
 end= today+datetime.timedelta(days=1)
-last_15 = datetime.datetime.now() - timedelta(minutes = 160)
-last_30 = datetime.datetime.now() - timedelta(minutes = 310)
-last_45 = datetime.datetime.now() - timedelta(minutes = 460)
-last_60 = datetime.datetime.now() - timedelta(minutes = 610)
+last_15 = datetime.datetime.now() - timedelta(minutes = 16)
+last_30 = datetime.datetime.now() - timedelta(minutes = 31)
+last_45 = datetime.datetime.now() - timedelta(minutes = 46)
+last_60 = datetime.datetime.now() - timedelta(minutes = 61)
 last_15 = last_15.strftime('%Y-%m-%d %H:%M:%S')
 last_30 = last_30.strftime('%Y-%m-%d %H:%M:%S')
 last_45 = last_45.strftime('%Y-%m-%d %H:%M:%S')
 last_60 = last_60.strftime('%Y-%m-%d %H:%M:%S')
-print(last_15,last_60)
-#sites= ['R0101L1','R0101L2','R0101L3','R0101L4',"R2132L1" ,"R2132L2" ,"R2132L3" ,"R2132L4"]
+
+#List containing all of the RTEM sensors.
 sites=[
     "R0613L1" ,"R0613L2" ,"R0613L3" ,"R0613L4" ,"R1991L1" ,"R1991L2" ,"R1991L3" ,"R1991L4" ,"R1991L5" ,"R1991L6" ,"R1992L1",
     "R1992L2" ,"R1992L3" ,"R1992L4" ,"R1992L5" ,"R1992L6" ,"R1994L1" ,"R1994L2" ,"R1994L3" ,"R1994L4" ,"R1994L5" ,"R1994L6",
@@ -40,13 +42,17 @@ sites=[
     "R0721L6" ,"R0721l7" ,"R0721L8",
 ]
 
+#Set up list containing urls populated from the list above.
 urls=[]
 for site in sites:
     url=('http://bcc.opendata.onl/rtem_csv.json?Earliest='+str(today)+'&Latest='+str(end)+'&scn='+site+'&ApiKey='+key)
     urls.append(url)
 
+#This for loop contains a get request for the URLs above, which is turned into a dataframe. The dataframes are checked for
+#number of columns. If there is only one column it means the database is empty and so is put into the list, results_empty.
+#If there are multiple columns, this dataframe is reformated and added to list results.
 results=[]
-results2=[]
+results_empty=[]
 for url in urls:
     result=requests.get(url).json()
     df = pd.DataFrame(result['RTEM_CSVs'])
@@ -55,8 +61,9 @@ for url in urls:
         df2 = pd.DataFrame(result['RTEM_CSVs']['kids'][n]['kids'] for n in result['RTEM_CSVs']['kids'])
         df2['AverageSpeed'] = df2['AverageSpeed'].astype(int)
         results.append(df2)
-    results2.append(df)
-    
+    results_empty.append(df)
+
+#This creates a function that sends an email. Not currently in use yet.
 def send_email(password):
     with smtplib.SMTP_SSL('smtp.gmail.com',465) as smtp:
         smtp.login('louistyndall2@gmail.com',password)
@@ -67,6 +74,13 @@ def send_email(password):
         print('email is sent')
         smtp.quit()
 
+#If-else loop that creates three variables, speed, location and date. First the date is checked to ensure
+#the results are from the last 15 minutes (30,45 and 60 later), if this is false then a message will be printed
+#such as 'there are no current data points. If true, the speed is checked. If the speed is in the congestion zone,
+#0<x<12, then it checks if the speed was also in that range 30 minutes ago. If false, a message is printed that there
+#is no congestion. This continues until either there is no congestion x minutes ago, or a message is printed that
+#there has been congestion for over an hour. The end goal is to use the email function to send this data in an 
+#email. loc is used to identify which RTEM sensor is being used.
 for df in results:
     speed = df.iloc[-1]['AverageSpeed']
     loc = df.iloc[-1]['SCN']['value']
@@ -107,5 +121,4 @@ for df in results:
         else: 
             print(f'There is no congestion at {loc}')
     else:
-        print(f'There are no recent data points for {loc}')
-    
+        print(f'There are no recent data points for {loc}'
