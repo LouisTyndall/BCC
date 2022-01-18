@@ -8,14 +8,14 @@ with open('OSMnetwork/osmnodes.json') as f:
 with open('path.json') as f:
 	paths=json.load(f)
 	
-m = folium.Map(location=[45.5236, -122.6750])
+m = folium.Map(location=[52, -1.5])
 
 
 cols=['red','green','blue','grey']
 c=0
 for path in paths:
 	
-	folium.PolyLine([nodes[node] for node in path[3:]],color=cols[c]).add_to(m)
+	folium.PolyLine([nodes[node] for node in path[3:]],color=cols[c],tooltip=path[0]+','+path[1]+"   "+str(int(path[2]*1000))).add_to(m)
 	c+=1
 	if c==4:
 		c=0
