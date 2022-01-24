@@ -3,7 +3,8 @@ import math
 from collections import defaultdict
 import heapq
 
-highwaytypes='motorway','trunk','primary','secondary','tertiary','unclassified','residential','motorway_link','trunk_link','primary_link','secondary_link','tertiary_link','service','living_street'
+ang=40
+highwaytypes='motorway','motorway_link','trunk','trunk_link','primary','primary_link','secondary','secondary_link','tertiary','tertiary_link','unclassified','residential','service','living_street'
 
 def Dijkstra(edges,f,t):
 	#returns shortest path
@@ -65,6 +66,11 @@ def initial_bearing(pointA, pointB):
 
     return compass_bearing
 
+def anglediff(a,b):
+	r=(b-a)%360
+	if r>=180:
+		r-=360
+	return r
 
 
 
@@ -98,77 +104,62 @@ d=0
 e=len(bearings)
 res=[]
 for n in bearings:
-
-	candidates=[[distance(n[1][0],m[1][0])]+m for m in osmbearings if distance(n[1][0],m[1][0])<.05]
+	print (n)
+	candidates=[[distance(n[1][0],m[1][0])]+m for m in osmbearings if distance(n[1][0],m[1][0])<.1]
+	if len(candidates)==0:
+		print ('start node, no candidates within 50m')
 	hcandidates=[]
 	for i in candidates:
 		try:
-			off=((highwaytypes.index(i[4]))*.01)
+			off=((highwaytypes.index(i[4]))*.02)
 		except:
-			off=15
+			off=10
 		hcandidates.append([i[0]+off]+i[1:])
 	try:
-		start=sorted([i for i in hcandidates if -22.5<(n[2]-i[3])%360<22.5])[0]
+		start=sorted([i for i in hcandidates if -ang<anglediff(n[2],i[3])<ang])[0]    # -22.5<(n[2]-i[3])%360<22.5]
 	except:
+		print ('start node, no candidates within 45 degrees',n[1][0],n[2])
+		for zz in hcandidates:
+			print (zz,anglediff(n[2],zz[3]))
 		continue
-	candidates=[[distance(n[1][1],m[1][1])]+m for m in osmbearings if distance(n[1][1],m[1][1])<.05]
+	candidates=[[distance(n[1][1],m[1][1])]+m for m in osmbearings if distance(n[1][1],m[1][1])<.1]
+	if len(candidates)==0:
+		print ('end node, no candidates within 50m')
 	hcandidates=[]
 	for i in candidates:
 		try:
-			off=((highwaytypes.index(i[4]))*.01)
+			off=((highwaytypes.index(i[4]))*.02)
 		except:
-			off=15
+			off=10
 		hcandidates.append([i[0]+off]+i[1:])
 	try:
-		end=sorted([i for i in hcandidates if -22.5<(n[2]-i[3])%360<22.5])[0]
+		end=sorted([i for i in hcandidates if -ang<anglediff(n[2],i[3])<ang])[0]
+		#for zz in sorted(hcandidates):
+		#	if 0<anglediff(n[2],zz[3])<45:
+		#		print (zz,anglediff(n[2],zz[3]))
 	except:
+		print ('end node, no candidates within 45 degrees',n[1][1],n[2])
 		continue
 	#print (start)
 	#print (end)
 
 
 	try:
-		res.append(n[0]+list(Flatten(Dijkstra(edges,str(start[1][0]),str(end[1][1])))))
+		dij=list(Flatten(Dijkstra(edges,str(start[1][0]),str(end[1][1]))))
 	except:
 		continue
+	if dij[0]>(distance(*n[1])*2):
+		print ('too long')
+		continue
+	res.append(n[0]+dij)
+
 	d+=1
 	print (d,e)
-	#if d>20:
+	#if d>200:
 	#	break
 with open('path.json',"w") as f:
 	json.dump(res,f)
 print('DONE')
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 '''
 res=[]

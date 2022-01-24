@@ -7,7 +7,7 @@ syntax="/api/interpreter?data="
 #52.4947 53.4623 -1.9284 -1.8715
 def osmcreate(tl=(52.3802,-2.0338),br=(52.6093,-1.7269)):
 	print ('downloading data')
-	highwaytypes='motorway','trunk','primary','secondary','tertiary','unclassified','residential','motorway_link','trunk_link','primary_link','secondary_link','tertiary_link','service','living_street'
+	highwaytypes='motorway','trunk','primary','secondary','tertiary','unclassified','residential','motorway_link','trunk_link','primary_link','secondary_link','tertiary_link','living_street'
 
 	url=overpass+syntax+'[out:json][timeout:25];('
 	for n in highwaytypes:
