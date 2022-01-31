@@ -4,6 +4,7 @@ from collections import defaultdict
 import heapq
 
 ang=40
+dist=.05
 highwaytypes='motorway','motorway_link','trunk','trunk_link','primary','primary_link','secondary','secondary_link','tertiary','tertiary_link','unclassified','residential','service','living_street'
 
 def Dijkstra(edges,f,t):
@@ -104,8 +105,8 @@ d=0
 e=len(bearings)
 res=[]
 for n in bearings:
-	print (n)
-	candidates=[[distance(n[1][0],m[1][0])]+m for m in osmbearings if distance(n[1][0],m[1][0])<.1]
+	print ()
+	candidates=[[distance(n[1][0],m[1][0])]+m for m in osmbearings if distance(n[1][0],m[1][0])<dist]
 	if len(candidates)==0:
 		print ('start node, no candidates within 50m')
 	hcandidates=[]
@@ -122,7 +123,7 @@ for n in bearings:
 		for zz in hcandidates:
 			print (zz,anglediff(n[2],zz[3]))
 		continue
-	candidates=[[distance(n[1][1],m[1][1])]+m for m in osmbearings if distance(n[1][1],m[1][1])<.1]
+	candidates=[[distance(n[1][1],m[1][1])]+m for m in osmbearings if distance(n[1][1],m[1][1])<dist]
 	if len(candidates)==0:
 		print ('end node, no candidates within 50m')
 	hcandidates=[]
