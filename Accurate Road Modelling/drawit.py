@@ -88,7 +88,7 @@ with open('path.json') as f:
 m = folium.Map(location=[52, -1.5])
 
 
-cols=['red','green','blue','grey']
+cols=['red','green','yellow','brown']
 c=0
 for path in paths:
 	line=[nodes[node] for node in path[3:]]
@@ -104,4 +104,4 @@ for path in paths:
 	c+=1
 	if c==4:
 		c=0
-m.save('test.html')
+m.save('google.html')

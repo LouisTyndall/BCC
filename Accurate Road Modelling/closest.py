@@ -4,7 +4,7 @@ from collections import defaultdict
 import heapq
 
 ang=40
-dist=.05
+dist=.1
 highwaytypes='motorway','motorway_link','trunk','trunk_link','primary','primary_link','secondary','secondary_link','tertiary','tertiary_link','unclassified','residential','service','living_street'
 
 def Dijkstra(edges,f,t):
@@ -104,9 +104,11 @@ for n in osmways:
 d=0
 e=len(bearings)
 res=[]
+errors=[]
 for n in bearings:
 	print ()
 	candidates=[[distance(n[1][0],m[1][0])]+m for m in osmbearings if distance(n[1][0],m[1][0])<dist]
+	ocandidates=candidates
 	if len(candidates)==0:
 		print ('start node, no candidates within 50m')
 	hcandidates=[]
@@ -117,7 +119,7 @@ for n in bearings:
 			off=10
 		hcandidates.append([i[0]+off]+i[1:])
 	try:
-		start=sorted([i for i in hcandidates if -ang<anglediff(n[2],i[3])<ang])[0]    # -22.5<(n[2]-i[3])%360<22.5]
+		start=sorted([i for i in candidates if -ang<anglediff(n[2],i[3])<ang])[0]    # -22.5<(n[2]-i[3])%360<22.5]
 	except:
 		print ('start node, no candidates within 45 degrees',n[1][0],n[2])
 		for zz in hcandidates:
@@ -134,7 +136,7 @@ for n in bearings:
 			off=10
 		hcandidates.append([i[0]+off]+i[1:])
 	try:
-		end=sorted([i for i in hcandidates if -ang<anglediff(n[2],i[3])<ang])[0]
+		end=sorted([i for i in candidates if -ang<anglediff(n[2],i[3])<ang])[0]
 		#for zz in sorted(hcandidates):
 		#	if 0<anglediff(n[2],zz[3])<45:
 		#		print (zz,anglediff(n[2],zz[3]))
@@ -151,6 +153,7 @@ for n in bearings:
 		continue
 	if dij[0]>(distance(*n[1])*2):
 		print ('too long')
+		errors.append([ocandidates,candidates,n])
 		continue
 	res.append(n[0]+dij)
 
@@ -160,6 +163,8 @@ for n in bearings:
 	#	break
 with open('path.json',"w") as f:
 	json.dump(res,f)
+with open('errors.json','w')as f:
+	json.dump(errors,f)
 print('DONE')
 
 '''
