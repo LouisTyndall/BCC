@@ -23,10 +23,30 @@ class vivacity:
 		headers={"accept":"application/json","api-version":"2","Authorization":"Bearer "+self.token['access_token']}
 		n=requests.get(url+"counts",headers=headers)
 		return n.json()
+	
+	def countline(self):
+		headers={"accept":"application/json","api-version":"2","Authorization":"Bearer "+self.token['access_token']}
+		n=requests.get(url+"countline",headers=headers)
+		return n.json()
+	
+	def sensor(self):
+		headers={"accept":"application/json","api-version":"2","Authorization":"Bearer "+self.token['access_token']}
+		n=requests.get(url+"sensor",headers=headers)
+		return n.json()
+
 
 if __name__=='__main__':
+	import folium
+	m = folium.Map(location=[53,-1.5])
 	a=vivacity()
 	data=a.counts()
-	for n in data:
+	res=a.countline()
+	for n in res:
 		print (n)
+		for y in n:
+			print (y)
 
+			print (res[n][y]['location']['centre']['lat']) #,n[y]['location']['centre']['long'])
+			folium.Marker([y['location']['centre']['lat'],y['location']['centre']['lon']], popup=y['id'], tooltip=y['name']).add_to(m)
+
+	m.save('testmap.html')
