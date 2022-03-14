@@ -1,0 +1,35 @@
+import requests
+from passwords import *
+import pandas as pd
+import matplotlib.pyplot as plt
+import datetime
+
+#start=input('Enter date (YYYY-MM-DD)')
+start = '2022-2-6'
+start = datetime.datetime.strptime(start, '%Y-%m-%d')
+end= start+datetime.timedelta(days=3)
+loc = '1 - A38 City Centre to City Centre - IB'
+
+url = f'http://www.tfwm.onl/AWS_Analysis.json?ApiKey={key}&earliest={start}&latest={end}&Segment_ID={loc}'
+result = requests.get(url).json()
+df = pd.DataFrame(result['AWS_Analysis']['kids'][n]['kids'] for n in result['AWS_Analysis']['kids'])
+df['BIN'] =pd.to_datetime(df['BIN'])
+df.set_index('BIN', inplace=True)
+df['Current_avg_Segment_Time'] = df['Current_avg_Segment_Time'].astype(float)
+df['Segment_Speed_MPH'] = df['Segment_Speed_MPH'].astype(float)
+df['ratio'] = df['Current_avg_Segment_Time']/df['Segment_Speed_MPH']
+df['ratio'] = df['ratio'].astype(float)
+df = df.resample('15 Min').mean()
+
+url = f'http://www.tfwm.onl/AWS_RoutesAverage.json?ApiKey={key}&earliest={start}&latest={end}&Segment_ID={loc}'
+result = requests.get(url).json()
+df2 = pd.DataFrame(result['AWS_RoutesAverage']['kids'][n]['kids'] for n in result['AWS_RoutesAverage']['kids'])
+df2['captures'] = df2['captures'].astype(int)
+df2['BIN'] =pd.to_datetime(df2['BIN'])
+df2.set_index('BIN', inplace=True)
+df2 = df2.resample('15 min').sum()
+
+df = pd.concat([df, df2], axis=1)
+print(df)
+
+df.to_excel(f'{loc} validity.xlsx')
