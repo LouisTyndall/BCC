@@ -1,0 +1,31 @@
+import requests
+from passwords import *
+import pandas as pd
+import matplotlib.pyplot as plt
+import datetime
+
+start = '2022-1-10'
+start = datetime.datetime.strptime(start, '%Y-%m-%d')
+end= start+datetime.timedelta(days=150)
+
+url = f'http://www.tfwm.onl/AWS_Analysis.json?ApiKey={key}&earliest={start}&latest={end}&Segment_ID=1 - A38 City Centre to City Centre - IB'
+result = requests.get(url).json()
+df = pd.DataFrame(result['AWS_Analysis']['kids'][n]['kids'] for n in result['AWS_Analysis']['kids'])
+df['BIN'] =pd.to_datetime(df['BIN'])
+df.set_index('BIN', inplace=True)
+df['Current_avg_Segment_Time'] = df['Current_avg_Segment_Time'].astype(float)
+df['Segment_Speed_MPH'] = df['Segment_Speed_MPH'].astype(float)
+
+df['ratio'] = df['Current_avg_Segment_Time']/df['Segment_Speed_MPH']
+df['ratio'] = df['ratio'].astype(float)
+
+outlier = df[df['ratio'] > 50]
+outlier = outlier[['Current_avg_Segment_Time','Segment_Speed_MPH','ratio']]
+outlier = outlier.resample('1D').mean()
+outlier = outlier[outlier['ratio'].notna()]
+print(outlier)
+
+plt.plot(df.index,df['ratio'])
+fig = plt.gcf()
+fig.set_size_inches(18.5, 10.5)
+plt.show()
