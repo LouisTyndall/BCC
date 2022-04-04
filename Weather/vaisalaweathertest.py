@@ -1,7 +1,7 @@
 import passwords
 import requests
 
-url='https://tfwm.onl/weather.json?meta=false&ApiKey='+passwords.key
+url='https://tfwm.onl/weather.json?meta=true&ApiKey='+passwords.key
 
 n=requests.get(url)
 
