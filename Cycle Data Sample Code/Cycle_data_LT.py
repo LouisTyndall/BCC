@@ -3,8 +3,8 @@ import pandas as pd
 import base64
 from requests_oauthlib import OAuth2Session
 
-id='9k1GQrfrK2BuwPWlLC6XyDrbvsUa'
-secret='n11vklOFPeyTIJfjqKH8HkgJDZoa'
+id=''
+secret=''
 start = '2021-01-01T00:00:00'
 end='2021-01-10T00:00:00'
 step = 'day'
