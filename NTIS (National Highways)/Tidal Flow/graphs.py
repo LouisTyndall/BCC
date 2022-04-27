@@ -47,8 +47,10 @@ def getdata(begin=dates().today,end=dates().tomorrow,key=alkey):
 	for n in y["RTEM_CSVs"]['kids']:
 		ret[y["RTEM_CSVs"]['kids'][n]['kids']['SCN']['value']][dates().rencode(y["RTEM_CSVs"]['kids'][n]['kids']['Date'])]=[int(y["RTEM_CSVs"]['kids'][n]['kids']['AverageSpeed']),int(y["RTEM_CSVs"]['kids'][n]['kids']['Total'])]
 	return ret
+
+
 import matplotlib.pyplot as plt
-n=getdata('11/2/2022','12/2/2022')
+n=getdata('26/4/2022','27/4/2022')
 j=['R0101L3','R0101L4']
 res={}
 for x in n[j[0]]:

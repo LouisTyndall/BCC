@@ -1,6 +1,7 @@
 #!python3
 import requests
 import andyconfig
+from passwords import key,password
 import os
 import folium
 import datetime
@@ -13,7 +14,7 @@ from collections import defaultdict
 class NTIS():
 	def __init__(self):
 		url='https://bccutc.com/NTIS%20VMS.json'
-		par={'ApiKey':os.environ['ALKEY']}
+		par={'ApiKey':key}
 		n=requests.get(url,params=par)
 		n.encoding="ISO-8859-1"
 		#print (n.text[:1000])
@@ -26,7 +27,7 @@ class NTIS():
 		late=(early+datetime.timedelta(days=day)).date()
 		early,late=str(early.date()),str(late)
 		url='https://bccutc.com/NTIS%20VMS.json'
-		par={'ApiKey':os.environ['ALKEY'],'Earliest':early,'Latest':late}
+		par={'ApiKey':key,'Earliest':early,'Latest':late}
 		
 		z=lzmastuff()
 		f=z.get(early+late)
@@ -117,22 +118,26 @@ def tidal_status():
 	x=NTIS()
 	vms={v: k for k, v in x.unit.items()}
 	info=x.data
-	site='A38M/3811A4'
+	site='A38M/3827A4'
 	#northbound
 	for n in info:
 		if n['Identity']==vms[site]:
-			nb=[n['Dates'],n['Pictogram']]
+			nb=[n['Dates'],n['Pictogram'],vms[site]]
 	#southbound
-	site='A38M/3811B4'
+	site='A38M/3827B4'
 	for n in info:
 		if n['Identity']==vms[site]:
-			sb=[n['Dates'],n['Pictogram']]
+			sb=[n['Dates'],n['Pictogram'],vms[site]]
 	print (nb,sb)
 	status='not operating'
-	if nb[1]=='LaneOpen':
+	if nb[1]=='laneOpen':
 		status='northbound'
-	if sb[1]=='LaneClosed':
+	if nb[1]=='advisorySpeed':
+		status='northbound (with advisory speed)'
+	if sb[1]=='laneOpen':
 		status='Southbound'
+	if sb[1]=='advisorySpeed':
+		status='southbound (with advisory speed)'
 	return status
 
 
