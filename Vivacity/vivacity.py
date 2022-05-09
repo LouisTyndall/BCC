@@ -41,12 +41,10 @@ if __name__=='__main__':
 	a=vivacity()
 	data=a.counts()
 	res=a.countline()
+	print (len(res))
 	for n in res:
 		print (n)
-		for y in n:
-			print (y)
-
-			print (res[n][y]['location']['centre']['lat']) #,n[y]['location']['centre']['long'])
-			folium.Marker([y['location']['centre']['lat'],y['location']['centre']['lon']], popup=y['id'], tooltip=y['name']).add_to(m)
+		print (n['location']['centre']['lat']) 
+		folium.Marker([n['location']['centre']['lat'],n['location']['centre']['long']], popup=n['id'], tooltip=n['name']).add_to(m)
 
 	m.save('testmap.html')

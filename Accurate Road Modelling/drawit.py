@@ -2,7 +2,7 @@
 import json
 import folium
 import math
-
+import pickle 
 def deg2num(lat_deg, lon_deg, zoom):
 	lat_rad = math.radians(lat_deg)
 	n = 2.0 ** zoom
@@ -84,7 +84,15 @@ with open('OSMnetwork/osmnodes.json') as f:
 
 with open('path.json') as f:
 	paths=json.load(f)
-	
+with open('BCM count data/AADT.json','rb') as f:
+	counts=pickle.load(f)
+
+import shapefile
+w = shapefile.Writer('SaturnRoads',shapeType=3)
+w.field('A_Node', 'N')
+w.field('B_Node', 'N')
+w.field('AADT', 'N')
+
 m = folium.Map(location=[52, -1.5])
 
 
@@ -94,14 +102,29 @@ for path in paths:
 	line=[nodes[node] for node in path[3:]]
 
 	line=offset(line)
-				
 	try:
-		folium.PolyLine(line,color=cols[c],tooltip=path[0]+','+path[1]+"   "+str(int(path[2]*1000))).add_to(m)
+		aadt=counts[int(path[0]),int(path[1])]
 	except:
-		#print (path,line)
-		import sys
-		sys.exit(0)
+		print (path,line)
+
+	try:
+		folium.PolyLine(line,weight=int(math.sqrt(aadt)/10),color=cols[int(math.sqrt(aadt)/30)%4],tooltip=path[0]+','+path[1]+"   "+str(int(path[2]*1000))+'AADT = '+str(aadt)).add_to(m)
+	except:
+		print (path,line)
+	line=[[n[1],n[0]] for n in line]
+	w.line([line])
+	w.record(int(path[0]),int(path[1]),aadt)
 	c+=1
 	if c==4:
 		c=0
+w.close()
+prj = open("SaturnRoads.prj", "w") 
+epsg = 'GEOGCS["WGS 84",DATUM["WGS_1984",SPHEROID["WGS 84",6378137,298.257223563]],PRIMEM["Greenwich",0],UNIT["degree",0.0174532925199433]]'
+prj.write(epsg)
+prj.close()
+with open('BCMnetwork/saturncoords.json') as f:
+	coords=json.load(f)
+	
+for n in coords:
+	folium.Marker(coords[n],tooltip=n).add_to(m)
 m.save('google.html')

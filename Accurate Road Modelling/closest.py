@@ -4,7 +4,7 @@ from collections import defaultdict
 import heapq
 
 ang=40
-dist=.1
+dist=.05
 highwaytypes='motorway','motorway_link','trunk','trunk_link','primary','primary_link','secondary','secondary_link','tertiary','tertiary_link','unclassified','residential','service','living_street'
 
 def Dijkstra(edges,f,t):
@@ -100,7 +100,7 @@ for n in osmways:
 
 		osmbearings.append([[n,str(m['destination'])],(a,b),initial_bearing(a,b),m['roadtype']])
 
-#match start and end node of bcm to osm nodes that are within 100metres (.1km) and within 45 degrees otherwise discard
+#match start and end node of bcm to osm nodes that are within 50 metres (.05km) and within 80 degrees otherwise discard
 d=0
 e=len(bearings)
 res=[]
@@ -114,14 +114,15 @@ for n in bearings:
 	hcandidates=[]
 	for i in candidates:
 		try:
-			off=((highwaytypes.index(i[4]))*.02)
+			off=((highwaytypes.index(i[4]))*.04)
+			#print (off,i[4])
 		except:
 			off=10
 		hcandidates.append([i[0]+off]+i[1:])
 	try:
 		start=sorted([i for i in candidates if -ang<anglediff(n[2],i[3])<ang])[0]    # -22.5<(n[2]-i[3])%360<22.5]
 	except:
-		print ('start node, no candidates within 45 degrees',n[1][0],n[2])
+		print ('start node, no candidates within 80 degrees',n[1][0],n[2])
 		for zz in hcandidates:
 			print (zz,anglediff(n[2],zz[3]))
 		continue
@@ -131,7 +132,7 @@ for n in bearings:
 	hcandidates=[]
 	for i in candidates:
 		try:
-			off=((highwaytypes.index(i[4]))*.02)
+			off=((highwaytypes.index(i[4]))*.04)
 		except:
 			off=10
 		hcandidates.append([i[0]+off]+i[1:])

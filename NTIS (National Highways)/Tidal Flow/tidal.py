@@ -11,6 +11,9 @@ import lzma
 import time
 from collections import defaultdict
 
+
+#camera feed to check https://public.highwaystrafficcameras.co.uk/cctvpublicaccess/html/03814.html
+
 class NTIS():
 	def __init__(self):
 		url='https://bccutc.com/NTIS%20VMS.json'
@@ -118,16 +121,18 @@ def tidal_status():
 	x=NTIS()
 	vms={v: k for k, v in x.unit.items()}
 	info=x.data
-	site='A38M/3827A4'
+	site='A38M/3824A4'
 	#northbound
 	for n in info:
+		print (n)
 		if n['Identity']==vms[site]:
 			nb=[n['Dates'],n['Pictogram'],vms[site]]
 	#southbound
-	site='A38M/3827B4'
+	site='A38M/3824B4'
 	for n in info:
 		if n['Identity']==vms[site]:
 			sb=[n['Dates'],n['Pictogram'],vms[site]]
+			print (n)
 	print (nb,sb)
 	status='not operating'
 	if nb[1]=='laneOpen':
