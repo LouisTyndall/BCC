@@ -18,6 +18,5 @@ for i in cams:
     dic = pd.DataFrame(dic, index=[str(i)])
     dics.append(dic)
 
-
 df = pd.concat(dics)
 print(df)
