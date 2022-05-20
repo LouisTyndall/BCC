@@ -1,6 +1,6 @@
 import requests
 import json
-
+import datetime
 
 with open("password.json","r") as f:
 	password=json.load(f)
@@ -20,8 +20,17 @@ class vivacity:
 		self.token=n.json()
 		
 	def counts(self):
+		'https://api.vivacitylabs.com/counts?class=car,van,truck&countline=&timeFrom=2020-03-08T16%3A35%3A00.000Z&timeTo=2020-03-08T16%3A45%3A00.000Z'
+		data={"class":'cyclist,motorbike,car,pedestrian,taxi,van,minibus,bus,rigid,truck,emergency_car,emergency_van,fire_engine',
+			"countline":"",
+			"api-version":'2',
+			"timeFrom":(datetime.datetime.now()-datetime.timedelta(days=1)).isoformat()[:-3]+'Z',
+			"timeTo":(datetime.datetime.now()-datetime.timedelta(days=0)).isoformat()[:-3]+'Z',
+			"includeZeroCounts":"true"}
 		headers={"accept":"application/json","api-version":"2","Authorization":"Bearer "+self.token['access_token']}
-		n=requests.get(url+"counts",headers=headers)
+		n=requests.get(url+"counts",headers=headers,params=data)
+		print (n.url)
+		print (n.content)
 		return n.json()
 	
 	def countline(self):
@@ -42,6 +51,8 @@ if __name__=='__main__':
 	data=a.counts()
 	res=a.countline()
 	print (len(res))
+	with open('really.json','w') as f:
+		json.dump(data,f)
 	for n in res:
 		print (n)
 		print (n['location']['centre']['lat']) 

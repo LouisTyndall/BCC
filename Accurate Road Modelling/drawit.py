@@ -108,7 +108,7 @@ for path in paths:
 		print (path,line)
 
 	try:
-		folium.PolyLine(line,weight=int(math.sqrt(aadt)/10),color=cols[int(math.sqrt(aadt)/30)%4],tooltip=path[0]+','+path[1]+"   "+str(int(path[2]*1000))+'AADT = '+str(aadt)).add_to(m)
+		folium.PolyLine(line,weight=int(math.sqrt(aadt)/10)+1,color=cols[int(math.sqrt(aadt)/30)%4],tooltip=path[0]+','+path[1]+"   "+str(int(path[2]*1000))+'AADT = '+str(aadt)).add_to(m)
 	except:
 		print (path,line)
 	line=[[n[1],n[0]] for n in line]
@@ -125,6 +125,6 @@ prj.close()
 with open('BCMnetwork/saturncoords.json') as f:
 	coords=json.load(f)
 	
-for n in coords:
-	folium.Marker(coords[n],tooltip=n).add_to(m)
+#for n in coords:
+#	folium.Marker(coords[n],tooltip=n).add_to(m)
 m.save('google.html')
