@@ -7,8 +7,6 @@ df = pd.read_csv ('data1.csv', dtype={'Site_Id': str,'Lane':int,'RSE Id': str, '
 
 reverse = ['CAZ005','CAZ059','CAZ060','CAZ062','CAZ006','CAZ008','CAZ022','CAZ063','CAZ036','CAZ037','CAZ040','CAZ053',
           'CAZ003','CAZ004','CAZ015','CAZ016','CAZ018','CAZ026','CAZ038','CAZ046','CAZ030''CAZ031','CAZ039']
-direction = ['Approaching']
-
 internal = ['CAZ066','CAZ062','CAZ067','CAZ065']
 
 df_filtered = df[(df["RSE Id"].isin(reverse))]
