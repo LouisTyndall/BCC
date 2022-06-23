@@ -121,4 +121,4 @@ for df in results:
         else: 
             print(f'There is no congestion at {loc}')
     else:
-        print(f'There are no recent data points for {loc}'
+        print(f'There are no recent data points for {loc}')
