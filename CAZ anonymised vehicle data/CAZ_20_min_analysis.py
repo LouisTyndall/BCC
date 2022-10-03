@@ -1,8 +1,6 @@
 import pandas as pd
 from datetime import timedelta
-import matplotlib.pyplot as plt
 pd.options.mode.chained_assignment = None
-import matplotlib.dates as mdates
 import numpy as np
 
 df = pd.read_csv ('sept19_2022.csv', dtype={'Site_Id': str,'Lane':int,'RSE Id': str, 'Direction of Travel': str,
