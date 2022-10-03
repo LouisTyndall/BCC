@@ -74,17 +74,13 @@ for i in vrn:
     if len(df1) == 2:
         df1.sort_values(by='Capture Date', inplace=True)
         single.append(df1)
-    else:
-        continue
-    if len(df1) == 4:
+    elif len(df1) == 4:
         df1.sort_values(by='Capture Date', inplace=True)
         df_one = df1.head(2)
         one.append(df_one)
         df_two = df1.tail(2)
         two.append(df_two)
-    else:
-        continue
-    if len(df1) == 6:
+    elif len(df1) == 6:
         df1.sort_values(by='Capture Date', inplace=True)
         df__1 = df1.iloc[0:2]
         df__2 = df1.iloc[2:4]
@@ -92,9 +88,7 @@ for i in vrn:
         one.append(df__1)
         two.append(df__2)
         three.append(df__3)
-    else:
-        continue
-    if len(df1) == 8:
+    elif len(df1) == 8:
         df1.sort_values(by='Capture Date', inplace=True)
         df__1 = df1.iloc[0:2]
         df__2 = df1.iloc[2:4]
@@ -104,9 +98,7 @@ for i in vrn:
         two.append(df__2)
         three.append(df__3)
         four.append(df__4)
-    else:
-        continue
-    if len(df1) == 10:
+    elif len(df1) == 10:
         df1.sort_values(by='Capture Date', inplace=True)
         df__1 = df1.iloc[0:2]
         df__2 = df1.iloc[2:4]
@@ -120,6 +112,7 @@ for i in vrn:
         five.append(df__5)
     else:
         continue
+
 dfs = []  
 if len(single) >1:
     df_1 = pd.concat(single)
