@@ -42,7 +42,7 @@ class NTIS():
 			print (early)
 			#if datetime.datetime.now()-dates().encodenote(begin)>datetime.timedelta(days=2):
 			z.add(early+late,f)
-		print (f[:10000])
+		#print (f[:10000])
 		d=json.loads(f,strict=False)
 		j=d['NTIS_VMS']['kids']
 		
@@ -99,9 +99,10 @@ def tidaltimes(day=datetime.datetime.now()-datetime.timedelta(days=35)):
 		try:
 			ret[x.unit[n['Identity']]].append([n['Dates'],n['Pictogram']])
 		except:
-			print ('oops')
+			pass
+			#print ('oops')
 
-	test=ret['A38M/3811A4']
+	test=ret['A38M/3827A4']
 	ib=[]
 	ob=[]
 	for n in test:
@@ -109,7 +110,7 @@ def tidaltimes(day=datetime.datetime.now()-datetime.timedelta(days=35)):
 			ib.append(['closed',n[0]])
 		if n[1]=='laneOpen':
 			ib.append(['open',n[0]])
-	test=ret['A38M/3811B4']
+	test=ret['A38M/3827B4']
 	for n in test:
 		if n[1]=='laneOpen':
 			ob.append(['open',n[0]])
@@ -124,7 +125,7 @@ def tidal_status():
 	site='A38M/3827A4'
 	#northbound
 	for n in info:
-		print (n)
+		#print (n)
 		if n['Identity']==vms[site]:
 			nb=[n['Dates'],n['Pictogram'],vms[site]]
 			print (n)
@@ -133,7 +134,7 @@ def tidal_status():
 	for n in info:
 		if n['Identity']==vms[site]:
 			sb=[n['Dates'],n['Pictogram'],vms[site]]
-			print (n)
+			#print (n)
 	print (nb,sb)
 	status='not operating'
 	if nb[1]=='laneOpen':
@@ -151,4 +152,6 @@ def tidal_status():
 
 
 if __name__=="__main__":
+	for n in range(5):
+		print (tidaltimes(day=datetime.datetime.now()-datetime.timedelta(days=n)))
 	print (tidal_status())

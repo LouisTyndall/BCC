@@ -120,7 +120,9 @@ if __name__=="__main__":
 	api=cycles(id,secret)
 	sites=api.get_site_list()
 	print (sites)
-	print (api.get_data(100055036))
+	for n in sites:
+		print (n['name'],n['latitude'],n['longitude'])
+	#print (api.get_data(100055036))
 	import sys
 	sys.exit(0)
 	for n in sites:

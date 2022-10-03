@@ -5,18 +5,26 @@ import csv
 
 
 
-url='http://bcc.opendata.onl/rtem.json?ApiKey='+key 
+url='http://bcc.bccutc.com/rtem.json?ApiKey='+key 
 
 n=requests.get(url)
-print (n.content)
+#print (n.content)
 data=n.json()
 simplify=[[data['RTEMS']['kids'][record]['kids']['SCN']['value'],data['RTEMS']['kids'][record]['kids']['Description'],data['RTEMS']['kids'][record]['kids']['Northing'],data['RTEMS']['kids'][record]['kids']['Easting'],datetime.datetime.strptime(data['RTEMS']['kids'][record]['kids']['Date'],'%Y-%m-%d %H:%M:%S')] for record in data['RTEMS']['kids']]
 
 broken={}
+lat={}
 for n in simplify:
 	if datetime.timedelta(days=365)>datetime.datetime.now()-n[4]>datetime.timedelta(minutes=600):
 		broken[n[0][:5]]=[n[1],n[2],n[3],str(n[4])]
-		
+		#print (n)
+	lat[n[0]]=datetime.datetime.now()-n[4]
+	#if n[0]=='R0120D1L0':
+	#	print (n[0],lat[n[0]],datetime.datetime.now())
+	g=requests.get('http://www.bcctraffic.co.uk/rtem?loop='+n[0]+'&start=2&measure=True')
+	with open('flowimages2/'+n[0],'wb') as f:
+		f.write(g.content)
+
 for n in broken:
 	print (n,broken[n][0],broken[n][1],broken[n][2],broken[n][3])
 with open('broken.csv','w') as f:

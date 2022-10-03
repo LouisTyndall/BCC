@@ -45,7 +45,7 @@ sites=[
 #Set up list containing urls populated from the list above.
 urls=[]
 for site in sites:
-    url=('http://bcc.opendata.onl/rtem_csv.json?Earliest='+str(today)+'&Latest='+str(end)+'&scn='+site+'&ApiKey='+key)
+    url=('http://bccutc.com/rtem_csv.json?Earliest='+str(today)+'&Latest='+str(end)+'&scn='+site+'&ApiKey='+key)
     urls.append(url)
 
 #This for loop contains a get request for the URLs above, which is turned into a dataframe. The dataframes are checked for
