@@ -14,6 +14,7 @@ reverse = ['CAZ005','CAZ060','CAZ061','CAZ062','CAZ006','CAZ008','CAZ022','CAZ06
           'CAZ003','CAZ004','CAZ015','CAZ016','CAZ018','CAZ026','CAZ030','CAZ031','CAZ057','CAZ047']
 
 internal = ['CAZ063','CAZ064','CAZ065','CAZ066','CAZ067','CAZ068']
+df = df[~df['RSE Id'].isin(internal)]
 
 df_filtered = df[(df["RSE Id"].isin(reverse))]
 df_filtered.loc[df_filtered['Direction of Travel'] == 'Approaching','Direction of Travel'] = 'Outbound'
@@ -23,44 +24,11 @@ df_2 = df[~df['RSE Id'].isin(reverse)]
 df = pd.concat([df_filtered,df_2])
 
 remove = ['CAZ001','CAZ002','CAZ003','CAZ004','CAZ005','CAZ028','CAZ029','CAZ030','CAZ031']
-#remove = ['CAZ054','CAZ053']
-df = df[~df['RSE Id'].isin(internal)]
 #df = df[~df['RSE Id'].isin(remove)]
-
-know = ['CAZ001','CAZ002','CAZ003','CAZ004','CAZ005','CAZ006','CAZ007','CAZ008','CAZ009','CAZ059','CAZ060','CAZ061','CAZ062']
-east = ['CAZ010','CAZ011','CAZ012','CAZ013','CAZ014','CAZ015', 'CAZ016','CAZ017','CAZ018','CAZ065','CAZ066']
-south = ['CAZ019','CAZ020','CAZ021','CAZ022','CAZ023','CAZ024','CAZ025','CAZ026','CAZ027','CAZ064','CAZ068']
-con = ['CAZ041','CAZ042','CAZ043','CAZ044','CAZ045','CAZ063']
-west = ['CAZ032','CAZ033','CAZ034','CAZ035','CAZ037']
-jewel = ['CAZ048','CAZ049','CAZ050','CAZ051','CAZ052','CAZ053','CAZ054','CAZ055','CAZ056','CAZ057','CAZ058','CAZ067']
-
-bound = ['CAZ028','CAZ029','CAZ030','CAZ031','CAZ038','CAZ039','CAZ040','CAZ046','CAZ047']
 
 df.loc[df['Direction of Travel'] == 'Approaching', 'Direction of Travel'] = 'Inbound'
 df.loc[df['Direction of Travel'] == 'Departing', 'Direction of Travel'] = 'Outbound'
 
-for cam in know:
-    df.loc[df['RSE Id'] == cam, 'Location'] = 'Know'
-
-for cam in east:
-    df.loc[df['RSE Id'] == cam, 'Location'] = 'East'
-
-for cam in west:
-    df.loc[df['RSE Id'] == cam, 'Location'] = 'West'
-
-for cam in south:
-    df.loc[df['RSE Id'] == cam, 'Location'] = 'South'
-
-for cam in con:
-    df.loc[df['RSE Id'] == cam, 'Location'] = 'Con'
-
-for cam in jewel:
-    df.loc[df['RSE Id'] == cam, 'Location'] = 'Jewel' 
-    
-for cam in bound:
-    df.loc[df['RSE Id'] == cam, 'Location'] = 'Bound'
-
-cams = set(df['RSE Id'].tolist())
 vrn = set(df['Hashed VRN'].tolist())
 
 single = []
@@ -162,9 +130,7 @@ if len(df2) >= 1:
 
 first = len(df2)
 print('Number of trips:',first)
-#df3 = df2.loc[df2['col'] > 21600]
-#df4 = df3.loc[df3['col'] < 28800]
-df4 = df2.loc[df2['col'] < 1200]
-print('Number under 20 mins:',len(df4))
-second = len(df4)
+df3 = df2.loc[df2['col'] < 1200]
+print('Number under 20 mins:',len(df3))
+second = len(df3)
 print('Percent under 20 mins:',second/first*100)
