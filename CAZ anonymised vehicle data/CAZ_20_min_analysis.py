@@ -31,6 +31,7 @@ df.loc[df['Direction of Travel'] == 'Departing', 'Direction of Travel'] = 'Outbo
 
 vrn = set(df['Hashed VRN'].tolist())
 
+print ("sortvrns")
 single = []
 one = []
 two = []
@@ -103,6 +104,7 @@ if len(five) >1:
 if len(dfs) == 0:
     print('end')
 
+print ("calculate_times")
 time = []
 for df in dfs:
     for i in vrn:
