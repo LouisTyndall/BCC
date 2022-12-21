@@ -1,23 +1,46 @@
+import requests
+from password import *
 import pandas as pd
-import numpy as np
-from datetime import timedelta
-import datetime
-import seaborn as sns
+from datetime import datetime, timedelta
 import matplotlib.pyplot as plt
+import numpy as np
+import seaborn as sns
 
-x = ['july18_2022.csv','july19_2022.csv','july20_2022.csv','july21_2022.csv','july22_2022.csv','july23_2022.csv','july24_2022.csv']
-dfs = []
+day = input('ENTER START DATE:')
+dt = datetime.strptime(day, '%Y-%m-%d')
+mon = dt.date()
+tues = (dt + timedelta(days=1)).date()
+weds = (dt + timedelta(days=2)).date()
+thurs = (dt + timedelta(days=3)).date()
+fri = (dt + timedelta(days=4)).date()
+sat = (dt + timedelta(days=5)).date()
+sun = (dt + timedelta(days=6)).date()
+end = (dt + timedelta(days=7)).date()
 
-for i in x:
-    df = pd.read_csv (f'{i}', dtype={'Site_Id': str,'Lane':int,'RSE Id': str, 'Direction of Travel': str,
-                                         'Hashed VRN': int, 'Nationality': str, 'ANPR Confidence': int,
-                                         'ANPR Id':str, 'Payment Cleared': str, 'Locally Exempt':str,
-                                         'Exemption Type': str, 'System Direction': str, 'Display Direction': str})
+days = [mon, tues, weds, thurs, fri, sat, sun]
+total = []
 
-    reverse = ['CAZ005','CAZ060','CAZ061','CAZ062','CAZ006','CAZ008','CAZ022','CAZ064','CAZ037','CAZ038','CAZ039','CAZ053',
-              'CAZ003','CAZ004','CAZ015','CAZ016','CAZ018','CAZ026','CAZ030','CAZ031','CAZ057','CAZ047']
+for day in days:
+    headers = {
+        'Earliest':f'{day} 00:00:00',
+        'Latest':f'{day} 23:59:59',
+        'ApiKey':'HDMWDFKB8IB64BFQ3351251166261'
+    }
+    url='http://opendata.onl/caz.json?'
+
+    result = requests.get(url, headers = headers).json()
+    df = pd.DataFrame(result['CAZ']['kids']['Data'])
+    df = pd.json_normalize(df['kids'])
+
+    df = df.rename({'kids.Site.attrs.LL': 'co-ords', 'kids.Site.value': 'Site', 'kids.Vehicle': 'Hashed VRN',
+                    'kids.Camera': 'RSE Id', 'kids.Captured':'Capture Date', 'kids.Received': 'Received Date',
+                   'kids.Approach':'Direction of Travel','kids.Lane':'Lane'}, axis=1)
+
+    reverse = ['CAZ003','CAZ004','CAZ005','CAZ006','CAZ008','CAZ015','CAZ016','CAZ018','CAZ022','CAZ026','CAZ030','CAZ031',
+          'CAZ035','CAZ037','CAZ038','CAZ039','CAZ041','CAZ047','CAZ053','CAZ060','CAZ061','CAZ064']
 
     internal = ['CAZ063','CAZ064','CAZ065','CAZ066','CAZ067','CAZ068']
+    df = df[~df['RSE Id'].isin(internal)]
 
     df_filtered = df[(df["RSE Id"].isin(reverse))]
     df_filtered.loc[df_filtered['Direction of Travel'] == 'Approaching','Direction of Travel'] = 'Outbound'
@@ -25,10 +48,9 @@ for i in x:
     df_filtered.loc[df_filtered['Direction of Travel'] == 'Outbound','Direction of Travel'] = 'Departing'
     df_2 = df[~df['RSE Id'].isin(reverse)]
     df = pd.concat([df_filtered,df_2])
-    df = df[~df['RSE Id'].isin(internal)]
-    
-    remove = ['CAZ046','CAZ047']
-    df = df[df['RSE Id'].isin(remove)]
+
+    df.loc[df['Direction of Travel'] == 'Approaching', 'Direction of Travel'] = 'Inbound'
+    df.loc[df['Direction of Travel'] == 'Departing', 'Direction of Travel'] = 'Outbound'
     
     con = ['CAZ041','CAZ042','CAZ043','CAZ044','CAZ045','CAZ063']
     know = ['CAZ001','CAZ002','CAZ003','CAZ004','CAZ005','CAZ006',
@@ -37,34 +59,26 @@ for i in x:
     south = ['CAZ019','CAZ020','CAZ021','CAZ022','CAZ023','CAZ024','CAZ025','CAZ026','CAZ027','CAZ064','CAZ068']
     west = ['CAZ032','CAZ033','CAZ034','CAZ035','CAZ037']
     jewel = ['CAZ048','CAZ049','CAZ050','CAZ051','CAZ052','CAZ053','CAZ054','CAZ055','CAZ056','CAZ057','CAZ058','CAZ067']
-    #df = df[df['RSE Id'].isin(jewel)]
-
-    df.loc[df['Direction of Travel'] == 'Approaching', 'Direction of Travel'] = 'Inbound'
-    df.loc[df['Direction of Travel'] == 'Departing', 'Direction of Travel'] = 'Outbound'
-
-    #df = df.loc[df['Direction of Travel'] == 'Inbound']
-    vrn = set(df['Hashed VRN'].tolist())
-    df_vrn = []
-    for i in vrn:
-        df1 = df.loc[df['Hashed VRN'] == i]
-        if len(df1) == 2:
-            df1.sort_values(by='Capture Date', inplace=True)
-            df_vrn.append(df1)
-    df = pd.concat(df_vrn)
-
+    
+    lookup = ['CAZ035']
+    df = df[df['RSE Id'].isin(lookup)]
+        
+    df = df.loc[df['Direction of Travel'] == 'Inbound']
+    
     df['Capture Date'] =pd.to_datetime(df['Capture Date'])
     df.set_index('Capture Date', inplace=True)
-
+    
+    df['Lane'] = df['Lane'].astype(int)
     df = df.resample('15 Min').sum()
     df = df[['Lane']]
-    dfs.append(df)
+    total.append(df)
 
-df = pd.concat(dfs)
+df = pd.concat(total)
 df.sort_values(by='Capture Date', ascending=True, inplace=True)
 
-start = datetime.datetime.strptime('2022-8-01', '%Y-%m-%d')
+start = datetime.strptime(str(mon), '%Y-%m-%d')
 days = 7
-end = start+datetime.timedelta(days=days)
+end = start+timedelta(days=days)
 rng = pd.date_range(start, end, freq='5 min')
 time = df['Lane'].tolist()
 diff = np.array_split(time, days)
@@ -76,8 +90,7 @@ df.set_index('Date', inplace=True)
 df = df.resample('1D').mean()
 df.replace(0, np.nan, inplace=True)
 
-print(df)
-df.to_excel('46to47.xlsx')
+#df.to_excel('46to47.xlsx')
 
 fig, ax = plt.subplots(figsize=(20,15)) 
 x_axis_labels = ["00:00:00", "00:15:00", "00:30:00", "00:45:00", "01:00:00", "01:15:00", "01:30:00", "01:45:00",
