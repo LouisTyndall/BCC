@@ -7,7 +7,6 @@ import numpy as np
 import seaborn as sns
 
 #set up parameters for the date range
-
 day = input('ENTER START DATE:')
 dt = datetime.strptime(day, '%Y-%m-%d')
 mon = dt.date()
@@ -21,7 +20,6 @@ sun = (dt + timedelta(days=6)).date()
 days = [mon, tues, weds, thurs, fri, sat, sun]
 
 #retrive data from the API for each day
-
 total = []
 for day in days:
     headers = {
@@ -32,7 +30,6 @@ for day in days:
     url='http://opendata.onl/caz.json?'
 
     #get request, then convert the data to a data frame
-    
     result = requests.get(url, headers = headers).json()
     df = pd.DataFrame(result['CAZ']['kids']['Data'])
     df = pd.json_normalize(df['kids'])
