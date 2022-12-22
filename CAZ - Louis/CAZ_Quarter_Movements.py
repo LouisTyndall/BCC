@@ -1,15 +1,30 @@
 import pandas as pd
+import requests
 
-df = pd.read_csv ('july2_2022.csv', dtype={'Site_Id': str,'Lane':int,'RSE Id': str, 'Direction of Travel': str,
-                                     'Hashed VRN': int, 'Nationality': str, 'ANPR Confidence': int,
-                                     'ANPR Id':str, 'Payment Cleared': str, 'Locally Exempt':str,
-                                     'Exemption Type': str, 'System Direction': str, 'Display Direction': str})
+headers = {
+  'Earliest':f'{day} 00:00:00',
+  'Latest':f'{day} 23:59:59',
+  'ApiKey':'HDMWDFKB8IB64BFQ3351251166261'
+}
+url='http://opendata.onl/caz.json?'
 
+#get request, then convert the data to a data frame
+result = requests.get(url, headers = headers).json()
+df = pd.DataFrame(result['CAZ']['kids']['Data'])
+df = pd.json_normalize(df['kids'])
+
+df = df.rename({'kids.Site.attrs.LL': 'co-ords', 'kids.Site.value': 'Site', 'kids.Vehicle': 'Hashed VRN',
+                 'kids.Camera': 'RSE Id', 'kids.Captured':'Capture Date', 'kids.Received': 'Received Date',
+                'kids.Approach':'Direction of Travel','kids.Lane':'Lane'}, axis=1)
+
+#removing the cameras that are inside the centre
+internal = ['CAZ063','CAZ064','CAZ065','CAZ066','CAZ067','CAZ068']
+df = df[~df['RSE Id'].isin(internal)]
+
+#Identifying cameras that are facing the 'wrong' way (Facing towards the city centre so approaching would be departing,
+#then reversing the direction.
 reverse = ['CAZ005','CAZ060','CAZ061','CAZ006','CAZ008','CAZ022','CAZ064','CAZ035','CAZ037','CAZ038','CAZ039','CAZ053',
           'CAZ003','CAZ004','CAZ015','CAZ016','CAZ018','CAZ026','CAZ030','CAZ031','CAZ047']
-
-
-internal = ['CAZ063','CAZ064','CAZ065','CAZ066','CAZ067','CAZ068']
 
 df_filtered = df[(df["RSE Id"].isin(reverse))]
 df_filtered.loc[df_filtered['Direction of Travel'] == 'Approaching','Direction of Travel'] = 'Outbound'
@@ -19,17 +34,17 @@ df_2 = df[~df['RSE Id'].isin(reverse)]
 df = pd.concat([df_filtered,df_2])
 df = df[~df['RSE Id'].isin(internal)]
 
+df.loc[df['Direction of Travel'] == 'Approaching', 'Direction of Travel'] = 'Inbound'
+df.loc[df['Direction of Travel'] == 'Departing', 'Direction of Travel'] = 'Outbound'
+
+#Create lists for each quarter and the corrosponding cameras
 know = ['CAZ001','CAZ002','CAZ003','CAZ004','CAZ005','CAZ006','CAZ007','CAZ008','CAZ009','CAZ059','CAZ060','CAZ061','CAZ062']
 east = ['CAZ010','CAZ011','CAZ012','CAZ013','CAZ014','CAZ015', 'CAZ016','CAZ017','CAZ018','CAZ065','CAZ066']
 south = ['CAZ019','CAZ020','CAZ021','CAZ022','CAZ023','CAZ024','CAZ025','CAZ026','CAZ027','CAZ064','CAZ068']
 con = ['CAZ041','CAZ042','CAZ043','CAZ044','CAZ045','CAZ063']
 west = ['CAZ032','CAZ033','CAZ034','CAZ035','CAZ037','CAZ038']
 jewel = ['CAZ048','CAZ049','CAZ050','CAZ051','CAZ052','CAZ053','CAZ054','CAZ055','CAZ056','CAZ057','CAZ058','CAZ067']
-
 bound = ['CAZ028','CAZ029','CAZ030','CAZ031','CAZ039','CAZ040','CAZ046','CAZ047']
-
-df.loc[df['Direction of Travel'] == 'Approaching', 'Direction of Travel'] = 'Inbound'
-df.loc[df['Direction of Travel'] == 'Departing', 'Direction of Travel'] = 'Outbound'
 
 vrn = set(df['Hashed VRN'].tolist())
 df_vrn=[]
