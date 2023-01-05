@@ -70,5 +70,3 @@ plt.ylabel("Number of vehicles")
 fig = plt.gcf()
 fig.set_size_inches(18.5, 10.5)
 plt.show
-
-fig.savefig('broadstreetCAZ.png', dpi=100)
