@@ -3,6 +3,7 @@ pd.options.mode.chained_assignment = None
 import numpy as np
 import requests
 
+#Set up the parameters for the search
 headers = {
     'Earliest':'2022-09-10 00:00:00',
     'Latest':'2022-09-10 23:59:59',
@@ -10,6 +11,7 @@ headers = {
 }
 url='http://opendata.onl/caz.json?'
 
+#Get request and transforming the data into a dataframe
 result = requests.get(url, headers = headers).json()
 df = pd.DataFrame(result['CAZ']['kids']['Data'])
 df = pd.json_normalize(df['kids'])
@@ -18,11 +20,14 @@ df = df.rename({'kids.Site.attrs.LL': 'co-ords', 'kids.Site.value': 'Site', 'kid
                 'kids.Camera': 'RSE Id', 'kids.Captured':'Capture Date', 'kids.Received': 'Received Date',
                'kids.Approach':'Direction of Travel','kids.Lane':'Lane'}, axis=1)
 
-reverse = ['CAZ003','CAZ004','CAZ005','CAZ006','CAZ008','CAZ015','CAZ016','CAZ018','CAZ022','CAZ026','CAZ030','CAZ031',
-          'CAZ035','CAZ037','CAZ038','CAZ039','CAZ041','CAZ047','CAZ053','CAZ060','CAZ061','CAZ064']
-
+#Removing the camera captures from inside the city centre.
 internal = ['CAZ063','CAZ064','CAZ065','CAZ066','CAZ067','CAZ068']
 df = df[~df['RSE Id'].isin(internal)]
+
+#Create a list of the cameras that are facing the 'wrong' way and then flip the direction, so Approaching means
+#inbound and Departing means outbound
+reverse = ['CAZ003','CAZ004','CAZ005','CAZ006','CAZ008','CAZ015','CAZ016','CAZ018','CAZ022','CAZ026','CAZ030','CAZ031',
+          'CAZ035','CAZ037','CAZ038','CAZ039','CAZ041','CAZ047','CAZ053','CAZ060','CAZ061','CAZ064']
 
 df_filtered = df[(df["RSE Id"].isin(reverse))]
 df_filtered.loc[df_filtered['Direction of Travel'] == 'Approaching','Direction of Travel'] = 'Outbound'
@@ -34,8 +39,10 @@ df = pd.concat([df_filtered,df_2])
 df.loc[df['Direction of Travel'] == 'Approaching', 'Direction of Travel'] = 'Inbound'
 df.loc[df['Direction of Travel'] == 'Departing', 'Direction of Travel'] = 'Outbound'
 
+#Create a list of cameras.
 cams = set(df['RSE Id'].tolist())
 
+#Create empty variables to add captures of 1, 2, 3 etc occurrences. 
 one= []
 two = []
 three = []
@@ -48,6 +55,7 @@ nine = []
 ten = []
 vrn = set(df['Hashed VRN'].tolist())
 
+#Find captures of 1, 2,3 etc length and add to the variables above.
 for i in vrn:
     df1 = df.loc[df['Hashed VRN'] == i]
     if len(df1) == 1:
@@ -82,10 +90,16 @@ for i in vrn:
         ten.append(df1)
     else:
         continue
+        
+#Create a dataframe containing only vehicles with only X number of captures. Print the 
+#length of this dataframe to show total number in this category. 
 df_1 = pd.concat(one)
 d = df_1.loc[df_1['Direction of Travel'] == 'Inbound']
 print('One capture, Inbound',len(d))
 d = df_1.loc[df_1['Direction of Travel'] == 'Outbound']
+
+#Find the number of inbound/outbound captures per camera, then 
+#print this value. Repeat for all capture lengths.
 for i in cams:
     p = df_1.loc[df_1['Direction of Travel'] == 'Inbound']
     print(f'In {i}',len(p.loc[p['RSE Id'] == i]))
