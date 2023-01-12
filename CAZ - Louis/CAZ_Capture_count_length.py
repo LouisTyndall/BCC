@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import requests
 
+#Set up the variables for the API search
 headers = {
     'Earliest':'2022-11-14 00:00:00',
     'Latest':'2022-11-14 23:59:59',
@@ -9,6 +10,7 @@ headers = {
 }
 url='http://opendata.onl/caz.json?'
 
+#Get request to obtain the data.
 result = requests.get(url, headers = headers).json()
 df = pd.DataFrame(result['CAZ']['kids']['Data'])
 df = pd.json_normalize(df['kids'])
@@ -17,13 +19,15 @@ df = df.rename({'kids.Site.attrs.LL': 'co-ords', 'kids.Site.value': 'Site', 'kid
                 'kids.Camera': 'RSE Id', 'kids.Captured':'Capture Date', 'kids.Received': 'Received Date',
                'kids.Approach':'Direction of Travel','kids.Lane':'Lane'}, axis=1)
 
+#Remove the captures from cameras in the city centre.
 internal = ['CAZ063','CAZ064','CAZ065','CAZ066','CAZ067','CAZ068']
 df = df[~df['RSE Id'].isin(internal)]
 
+#Create a list of all unique vehicles and print the length
 vrn = set(df['Hashed VRN'].tolist())
-print(len(vrn))
+print(f'The total number of vehicles is: {len(vrn)}')
 
-
+#Create empty variables to fill with capture numbers.
 one= []
 two = []
 three = []
@@ -35,7 +39,8 @@ eight = []
 nine = []
 ten = []
 
-
+#Loop through the data to find the number of unique vehicles that were captured
+#1,2,3 etc. times and add to the empty varibles above.
 for i in vrn:
     df1 = df.loc[df['Hashed VRN'] == i]
     if len(df1) == 1:
@@ -69,6 +74,9 @@ for i in vrn:
                                             ten.append(df1)
                                         else:
                                             continue
+                                            
+#Print the number of vehicles that have x number of captures
+#You must divided by the number of captures to work out the number of vehicles.
 df_1 = pd.concat(one)
 print('One Capture:'len(df_1))
 
