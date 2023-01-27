@@ -1,10 +1,48 @@
 import pandas as pd
 
-df = pd.read_csv ('data1.csv', dtype={'Site_Id': str,'Lane':int,'RSE Id': str, 'Direction of Travel': str,
-                                     'Hashed VRN': int, 'Nationality': str, 'ANPR Confidence': int,
-                                     'ANPR Id':str, 'Payment Cleared': str, 'Locally Exempt':str,
-                                     'Exemption Type': str, 'System Direction': str, 'Display Direction': str})
+#Create parameters for the search
+headers = {
+    'Earliest':f'{day} 00:00:00',
+    'Latest':f'{day} 23:59:59',
+    'ApiKey':'HDMWDFKB8IB64BFQ3351251166261'
+}
+url='http://opendata.onl/caz.json?'
 
+#get request, then convert the data to a data frame
+result = requests.get(url, headers = headers).json()
+df = pd.DataFrame(result['CAZ']['kids']['Data'])
+df = pd.json_normalize(df['kids'])
+
+#rename column headings
+df = df.rename({'kids.Site.attrs.LL': 'co-ords', 'kids.Site.value': 'Site', 'kids.Vehicle': 'Hashed VRN',
+                'kids.Camera': 'RSE Id', 'kids.Captured':'Capture Date', 'kids.Received': 'Received Date',
+               'kids.Approach':'Direction of Travel','kids.Lane':'Lane'}, axis=1)
+
+#Remove the cameras in the city centre
+internal = ['CAZ063','CAZ064','CAZ065','CAZ066','CAZ067','CAZ068']
+df = df[~df['RSE Id'].isin(internal)]
+
+"""
+Identifying cameras that are facing the 'wrong' way (Facing towards the city centre so approaching would be departing,
+then reversing the direction.
+"""
+reverse = ['CAZ003','CAZ004','CAZ005','CAZ006','CAZ008','CAZ015','CAZ016','CAZ018','CAZ022','CAZ026','CAZ030','CAZ031',
+          'CAZ035','CAZ037','CAZ038','CAZ039','CAZ041','CAZ047','CAZ053','CAZ060','CAZ061','CAZ064']
+
+df_filtered = df[(df["RSE Id"].isin(reverse))]
+df_filtered.loc[df_filtered['Direction of Travel'] == 'Approaching','Direction of Travel'] = 'Outbound'
+df_filtered.loc[df_filtered['Direction of Travel'] == 'Departing','Direction of Travel'] = 'Approaching'
+df_filtered.loc[df_filtered['Direction of Travel'] == 'Outbound','Direction of Travel'] = 'Departing'
+df_2 = df[~df['RSE Id'].isin(reverse)]
+df = pd.concat([df_filtered,df_2])
+
+df.loc[df['Direction of Travel'] == 'Approaching', 'Direction of Travel'] = 'Inbound'
+df.loc[df['Direction of Travel'] == 'Departing', 'Direction of Travel'] = 'Outbound'
+
+"""
+Create dictionary for each quarter and their corresponding cameras, then turn
+it into a dataframe
+"""
 data = [{'Gun':{'inbound':["CAZ004","CAZ061","CAZ058","CAZ056",'CAZ057','CAZ055'],
     'outbound':['CAZ005','CAZ060','CAZ056','CAZ057','CAZ055']},'Eastside':{'inbound'
     :["CAZ006",'CAZ002','CAZ009','CAZ010','CAZ064','CAZ011','CAZ012','CAZ013',
@@ -21,6 +59,11 @@ data = [{'Gun':{'inbound':["CAZ004","CAZ061","CAZ058","CAZ056",'CAZ057','CAZ055'
 ]
 df2 = pd.DataFrame(data)
 
+"""
+For each quarter, first identify which cameras belong in said quater. Then create a dataframe that only 
+contains inbound captures then. Find which inbound captures are in the choosen quarter, then count
+the length. Repeat for outbound. Repeat for all quarters.
+"""
 gun_in = []
 gun_out = []
 for i in df2['Gun'][0]['inbound']:
