@@ -8,6 +8,7 @@ import password as p
 
 key=p.key
 
+#Create the search criteria
 start=input('Enter date (YYYY-MM-DD)')
 #datatype=input('Enter dataset (Total, AverageSpeed, Car, HGV, LGV, Bus)')
 site=input('Enter site code')
@@ -15,6 +16,7 @@ numday=input('Number of days to search for')
 start1 = datetime.datetime.strptime(start, '%Y-%m-%d')
 end = start1 + datetime.timedelta(days=int(numday))
 
+#get request and transformation into a dataframe
 url='http://bcc.opendata.onl/rtem_csv.json?Earliest='+str(start)+'&Latest='+str(end)+'&scn='+site+'&ApiKey='+key 
 result=requests.get(url).json()
 df=pd.DataFrame(result)
@@ -22,6 +24,7 @@ df=pd.DataFrame(result)
 df2=df.iloc[:,0:40]
 df2.count()
 
+#Count the number of each vehicle
 a = [[datetime.datetime.strptime(result['RTEM_CSVs']['kids'][n]['kids']['Date'],"%Y-%m-%d %H:%M:%S"),int(result['RTEM_CSVs']['kids'][n]['kids']['Total'])] for n in result['RTEM_CSVs']['kids']]
 Car=sum(int(result['RTEM_CSVs']['kids'][n]['kids']['Car']) for n in result['RTEM_CSVs']['kids'])
 Bus=sum(int(result['RTEM_CSVs']['kids'][n]['kids']['Bus']) for n in result['RTEM_CSVs']['kids'])
@@ -30,6 +33,7 @@ LGV=sum(int(result['RTEM_CSVs']['kids'][n]['kids']['LGV']) for n in result['RTEM
 Motorcycle=sum(int(result['RTEM_CSVs']['kids'][n]['kids']['MotorBike']) for n in result['RTEM_CSVs']['kids'])
 Total=sum(int(result['RTEM_CSVs']['kids'][n]['kids']['Total']) for n in result['RTEM_CSVs']['kids'])
 
+#Print the number of each vehicle
 print('The total car count is',Car)
 print('The total bus count is',Bus)
 print('The total HGV count is',HGV)
