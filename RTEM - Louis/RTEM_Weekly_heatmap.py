@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
 
+#Set up search parameters for the heatmap, including locations.
 sites=['R0101L3','R0101L4']
 start = datetime.datetime.strptime('2023-1-16', '%Y-%m-%d')
 days = 7
@@ -15,6 +16,7 @@ url ='http://bcc.bccutc.com/rtem_csv.json?'
 
 print(start, end)
 
+#Get requests for each location, transformation into a dataframe
 dfs=[]
 for site in sites:
     params = {'ApiKey':key,
@@ -26,26 +28,34 @@ for site in sites:
     df=pd.DataFrame(result['RTEM_CSVs']['kids'][n]['kids'] for n in result['RTEM_CSVs']['kids'])
     dfs.append(df)
 
+#Concat all dataframes together and reformat. Resample to 15 minute bins.
 df = pd.concat(dfs)
 df.Date = pd.to_datetime(df.Date)
 df.reset_index(drop=True,inplace=True)
 df.set_index('Date',inplace=True)
-
 df['Total'] = df['Total'].astype(int)
 df['AverageSpeed'] = df['AverageSpeed'].astype(float)
 df = df.resample('15 Min').mean()
 df = df[df.AverageSpeed < 70]
 
+#Create a data range that is the same as the search period. Concat this with the dataframe to create a new axis.
 rng = pd.date_range(start, end, freq='5 min')
 d2 = pd.DataFrame(index=pd.date_range(start,end, freq='15T'))
 df = df.join(d2,how='right')
 df = df.resample('15 min').mean()
 df = df.iloc[:-1,:]
+
+#Fill any blanks with '0' and then convert that dataframe to a list. Choose either speed or count.
 df['AverageSpeed'] = df['AverageSpeed'].fillna(0)
 df['Total'] = df['Total'].fillna(0)
 df1 = df
 #time = df['AverageSpeed'].tolist()
 time = df['Total'].tolist()
+
+"""
+Split the data into the number of days specified above. Create a list of days. Then create a new dataframe with
+the data, splint into days, and the list of days. Finally reformat.
+"""
 diff = np.array_split(time, days)
 date = pd.date_range(start,end-timedelta(days=1),freq='d').strftime('%Y-%m-%d').tolist()
 df = pd.DataFrame(data=diff, columns=rng[:96].strftime('%H-%M-%S'), index=[date])
@@ -55,7 +65,7 @@ df.set_index('Date', inplace=True)
 df = df.resample('1D').mean()
 df.replace(0, np.nan, inplace=True)
 
-
+#Use the original dataframes to plot a graph of the count
 df1 = df1.resample('1H').mean()
 df2 = df1.resample('1D').sum()
 plt.plot(df1.index,df1['Total'])
@@ -66,6 +76,7 @@ fig = plt.gcf()
 fig.set_size_inches(18.5, 10.5)
 plt.show()
 
+#Create a list of the time labels.
 fig, ax = plt.subplots(figsize=(20,15)) 
 x_axis_labels = ["00:00:00", "00:15:00", "00:30:00", "00:45:00", "01:00:00", "01:15:00", "01:30:00", "01:45:00",
                  "02:00:00", "02:15:00", "02:30:00", "02:45:00", "03:00:00", "03:15:00", "03:30:00", "03:45:00", 
@@ -80,7 +91,7 @@ x_axis_labels = ["00:00:00", "00:15:00", "00:30:00", "00:45:00", "01:00:00", "01
                  "20:00:00", "20:15:00", "20:30:00", "20:45:00", "21:00:00", "21:15:00", "21:30:00", "21:45:00", 
                  "22:00:00", "22:15:00", "22:30:00", "22:45:00", "23:00:00", "23:15:00", "23:30:00", "23:45:00"]
 
-
+#Create and print the heatmap
 ax = sns.heatmap(df, cbar_kws={'label': 'Count', 'orientation': 'horizontal'},
                    mask=df.isnull(),cmap="YlGnBu", xticklabels=x_axis_labels, ax = ax)
 
